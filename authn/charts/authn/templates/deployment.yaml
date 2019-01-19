@@ -16,14 +16,13 @@ spec:
         app: {{ template "app.fullname" . }}
         release: {{ .Release.Name }}
         tier: backend
+      annotations:
+        readiness.status.sidecar.istio.io/applicationPorts: ""
     spec:
       volumes:
       - name: config
         configMap:
           name: {{ template "app.name" . }}-cm
-      - name: gcp-service-account
-        secret:
-          secretName: gcp-service-account
       affinity:
             podAntiAffinity:
               preferredDuringSchedulingIgnoredDuringExecution:
@@ -38,18 +37,10 @@ spec:
                   topologyKey: kubernetes.io/hostname
       containers:
         - name: {{ .Chart.Name }}
-          env:
-            - name: PROFILER_ENABLED
-              value: "{{ .Values.app.profiler.enabled }}"
-            - name: TRACING_ENABLED
-              value: "{{ .Values.app.tracing.enabled }}"
           volumeMounts:
           - name: config
             mountPath: /config.yaml
             subPath: config.yaml
-          - name: gcp-service-account
-            readOnly: true
-            mountPath: "/etc/gcp-service-account"
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           command: ["/app"]
           args: ["authn"]
@@ -80,16 +71,6 @@ spec:
               - http://localhost:{{ .Values.service.internalPort }}/authn/v1/healthz 
           resources:
 {{ toYaml .Values.resources | indent 12 }}
-        {{- if .Values.app.datastore_emulator }}
-        - name: datastore-emulator
-          image: "google/cloud-sdk"
-          command: ["gcloud"]
-          args: ["beta", "emulators", "datastore", "start", "--host-port=:8081"]
-        {{- end }}
-        {{- if .Values.app.local_redis }}
-        - name: redis
-          image: "redis"
-        {{- end }}
     {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}

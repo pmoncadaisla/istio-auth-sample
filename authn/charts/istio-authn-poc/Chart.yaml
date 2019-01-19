@@ -1,5 +1,0 @@
-apiVersion: v1
-description: Istio Authn
-name: istio-authn-poc
-version: 0.1.0
-icon: https://cdnres.masmovil.es/assets/images/metas/logo_masmovil.png

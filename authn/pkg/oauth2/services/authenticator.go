@@ -63,7 +63,6 @@ func (a *authenticator) GenerateAccessToken(data *osin.AccessData, generaterefre
 		"exp":    time.Now().Unix() + 86400,
 		"iat":    time.Now().Unix(),
 		"iss":    "masmovil.com",
-		"aud":    "Audience",
 		"sub":    data.AccessData.UserData.(dto.CustomUserData).Name,
 		"scopes": "api:everything",
 	})

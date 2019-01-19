@@ -4,7 +4,7 @@
 replicaCount: 1
 environment: dev
 image:
-  repository: eu.gcr.io/mmdh-dev/istio-authn
+  repository: eu.gcr.io/istio-auth-sample/authn
   tag: latest
   pullPolicy: IfNotPresent
 service:
@@ -20,9 +20,9 @@ autoscaler:
 disruptionbudget:
   enabled: true
 ingress:
-  enabled: true
+  enabled: false
   tls: false
-  basefqdn: istio-authn.lab.digitalhub.masmovil.com
+  basefqdn: example.com
   basepath: /*
   annotations:
     kubernetes.io/ingress.class: gce
@@ -46,10 +46,3 @@ readinessProbe:
   timeoutSeconds: 3
   failureThreshold: 3
   successThreshold: 1
-app:
-  local_redis: false
-  datastore_emulator: false
-  profiler: 
-    enabled: true
-  tracing:
-    enabled: false
