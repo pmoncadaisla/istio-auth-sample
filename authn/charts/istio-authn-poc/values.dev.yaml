@@ -1,0 +1,21 @@
+# Default values for api.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+autoscaler:
+  enabled: true
+disruptionbudget:
+  enabled: false
+ingress:
+  # Used to create an Ingress record.
+  tls: false
+  records:
+    - host: istio-authn-dev.lab.digitalhub.masmovil.com
+      path: /*
+resources:
+   limits:
+    cpu: 100m
+    memory: 128Mi
+   requests:
+    cpu: 10m
+    memory: 64Mi

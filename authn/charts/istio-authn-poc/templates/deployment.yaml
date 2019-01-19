@@ -1,0 +1,96 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "app.name" . }}
+  labels:
+    app: {{ template "app.fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    tier: backend
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "app.fullname" . }}
+        release: {{ .Release.Name }}
+        tier: backend
+    spec:
+      volumes:
+      - name: config
+        configMap:
+          name: {{ template "app.name" . }}-cm
+      - name: gcp-service-account
+        secret:
+          secretName: gcp-service-account
+      affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                      - {{ template "app.fullname" . }}
+                  topologyKey: kubernetes.io/hostname
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            - name: PROFILER_ENABLED
+              value: "{{ .Values.app.profiler.enabled }}"
+            - name: TRACING_ENABLED
+              value: "{{ .Values.app.tracing.enabled }}"
+          volumeMounts:
+          - name: config
+            mountPath: /config.yaml
+            subPath: config.yaml
+          - name: gcp-service-account
+            readOnly: true
+            mountPath: "/etc/gcp-service-account"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ["/app"]
+          args: ["authn"]
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.internalPort }}
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+            exec:
+              command:
+              - curl
+              - -f
+              - http://localhost:{{ .Values.service.internalPort }}/authn/v1/healthz 
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+            exec:
+              command:
+              - curl
+              - -f
+              - http://localhost:{{ .Values.service.internalPort }}/authn/v1/healthz 
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+        {{- if .Values.app.datastore_emulator }}
+        - name: datastore-emulator
+          image: "google/cloud-sdk"
+          command: ["gcloud"]
+          args: ["beta", "emulators", "datastore", "start", "--host-port=:8081"]
+        {{- end }}
+        {{- if .Values.app.local_redis }}
+        - name: redis
+          image: "redis"
+        {{- end }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}

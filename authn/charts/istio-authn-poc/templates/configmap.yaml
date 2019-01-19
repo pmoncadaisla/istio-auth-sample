@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: {{ template "app.name" . }}-cm
+data:
+  config.yaml: |-
+    server:
+        address: 0.0.0.0:8080
+        contextName: authn
+        sessionTokenExpiration: 3600
+        redisAccessTokens:
+            enable: false
+            addr: localhost:6379
+    gcloud:
+        projectID: istio-poc-datastore
+        credentialsPath: /etc/gcp-service-account
+        datastore:
+          emulator: false
+          emulatorAddr: localhost:8081
+    
+        

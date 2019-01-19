@@ -1,0 +1,12 @@
+!vendor/vendor.json
+vendor/*/
+bin
+.vscode
+debug
+test-skel
+.DS_Store
+docs.go
+swagger.json
+doc/swagger.json
+/config
+acceptance/debug.test
