@@ -1,0 +1,54 @@
+# Default values for api.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+environment: dev
+image:
+  repository: kennethreitz/httpbin
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  name: http
+  type: NodePort
+  externalPort: 80
+  internalPort: 80
+autoscaler:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 60
+ingress:
+  enabled: false
+  tls: false
+  basefqdn: example.com
+  basepath: /*
+  annotations:
+    kubernetes.io/ingress.class: gce
+    ingress.kubernetes.io/rewrite-target: /
+resources:
+   limits:
+    cpu: 1000m
+    memory: 256Mi
+   requests:
+    cpu: 100m
+    memory: 128Mi
+livenessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 3
+  timeoutSeconds: 2
+  failureThreshold: 3
+  successThreshold: 1
+readinessProbe:
+  initialDelaySeconds: 1
+  periodSeconds: 2
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+istio:
+  enabled: false
+  policy:
+    jwt:
+      issuer: testing@secure.istio.io
+      jwksUri: https://raw.githubusercontent.com/istio/istio/release-1.0/security/tools/jwt/samples/jwks.json
+opa: 
+  enabled: false

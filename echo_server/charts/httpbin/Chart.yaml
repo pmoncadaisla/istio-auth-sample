@@ -1,0 +1,4 @@
+apiVersion: v1
+description: Istio Echo Server
+name: echoserver
+version: 0.1.0

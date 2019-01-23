@@ -1,0 +1,34 @@
+{{- if .Values.istio.enabled -}}
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: "Policy"
+metadata:
+  name: "{{ .Release.Name }}-jwt-policy"
+  namespace: {{ .Release.Namespace }}
+spec:
+  targets:
+  - name: "{{ .Release.Name }}"
+  peers:
+  - mtls: {}
+  origins:
+  - jwt:
+      issuer: "{{ .Values.istio.policy.jwt.issuer }}"
+      jwksUri: "{{ .Values.istio.policy.jwt.jwksUri }}"
+  principalBinding: USE_ORIGIN
+
+
+
+metadata:
+  name: app
+  namespace: default
+spec:
+  origins:
+  - jwt:
+      issuer: meetup.com
+      jwksUri: http://login.default.svc.cluster.local/jwks.json
+  peers:
+  - mtls: {}
+  principalBinding: USE_ORIGIN
+  targets:
+  - name: app
+
+{- end -}}
